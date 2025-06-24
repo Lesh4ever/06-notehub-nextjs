@@ -4,23 +4,22 @@ import getQueryClient from "@/lib/getQueryClient";
 import NoteDetailsClient from "../NoteDetails.client";
 
 type NotePageProps = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 };
 
 export default async function NotePage({ params }: NotePageProps) {
+  const { id } = await params;
   const queryClient = getQueryClient();
-  const id = Number(params.id);
+  const numericId = Number(id);
 
   await queryClient.prefetchQuery({
-    queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
+    queryKey: ["note", numericId],
+    queryFn: () => fetchNoteById(numericId),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NoteDetailsClient id={id} />
+      <NoteDetailsClient id={numericId} />
     </HydrationBoundary>
   );
 }
