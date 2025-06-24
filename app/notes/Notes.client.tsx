@@ -9,9 +9,18 @@ import { fetchNotes } from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
+import NoteModal from "@/components/NoteModal/NoteModal";
+import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./Notes.module.css";
+import { Note } from "@/types/note";
+import { useDebounce } from "use-debounce";
 
-export default function NotesClient() {
+type NotesClientProps = {
+  notes: Note[];
+  totalPages: number;
+};
+
+export default function NotesClient({ notes, totalPages }: NotesClientProps) {
   const queryClient = useQueryClient();
 
   const { mutate } = useMutation({
@@ -27,10 +36,16 @@ export default function NotesClient() {
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [debouncedSearch] = useDebounce(search, 500);
 
   const { data, isPending, error } = useQuery({
-    queryKey: ["notes", { search, page }],
+    queryKey: ["notes", debouncedSearch, page],
     queryFn: () => fetchNotes({ search, page }),
+    initialData: {
+      notes,
+      totalPages,
+    },
     placeholderData: (prev) => prev,
   });
 
@@ -43,6 +58,9 @@ export default function NotesClient() {
     setPage(selected + 1);
   };
 
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
   if (isPending) return <p>Loading, please wait...</p>;
   if (error) return <p>Could not fetch the list of notes. {error.message}</p>;
   if (!data || data.notes.length === 0) return <p>No notes found.</p>;
@@ -50,12 +68,18 @@ export default function NotesClient() {
   return (
     <div className={css.wrapper}>
       <SearchBox value={search} onSearch={handleSearch} />
-      <NoteList notes={data.notes} onDelete={mutate} />
+      <button onClick={handleOpenModal}>Add Note</button>
+      <NoteList notes={data.notes} onDelete={(id: number) => mutate(id)} />
       <Pagination
         totalPages={data.totalPages}
         currentPage={page}
         onPageChange={handlePageChange}
       />
+      {isModalOpen && (
+        <NoteModal onClose={handleCloseModal}>
+          <NoteForm onClose={handleCloseModal} />
+        </NoteModal>
+      )}
     </div>
   );
 }

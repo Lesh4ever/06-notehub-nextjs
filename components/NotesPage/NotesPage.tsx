@@ -8,14 +8,24 @@ import { fetchNotes } from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import NoteList from "@/components/NoteList/NoteList";
-import NoteModal from "@/components/NoteModal/NoteModal";
 import NoteForm from "@/components/NoteForm/NoteForm";
+import { Note } from "@/types/note";
+import NoteModal from "../NoteModal/NoteModal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteNote } from "@/lib/api";
 
-export default function NotesPage() {
+type NotesPageProps = {
+  notes: Note[];
+  totalPages: number;
+};
+
+export default function NotesPage({ notes, totalPages }: NotesPageProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [debouncedSearch] = useDebounce(search, 500);
+
+  const queryClient = useQueryClient();
 
   const { data, isPending, isError, isSuccess } = useQuery({
     queryKey: ["notes", debouncedSearch, page],
@@ -24,6 +34,21 @@ export default function NotesPage() {
         search: debouncedSearch,
         page,
       }),
+    initialData: {
+      notes,
+      totalPages,
+    },
+  });
+
+  const { mutate } = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => {
+      toast.success("Note deleted!");
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+    onError: () => {
+      toast.error("Failed to delete note");
+    },
   });
 
   const handleSearch = (value: string) => {
@@ -58,7 +83,7 @@ export default function NotesPage() {
 
       {isSuccess && data.notes.length > 0 && (
         <>
-          <NoteList notes={data.notes} onDelete={() => {}} />
+          <NoteList notes={data.notes} onDelete={(id: number) => mutate(id)} />
           <Pagination
             totalPages={data.totalPages}
             currentPage={page}

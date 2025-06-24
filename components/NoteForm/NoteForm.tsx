@@ -1,8 +1,9 @@
-import { useFormik } from "formik";
+import { useFormik, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { createNote } from "@/lib/api";
+
 import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
@@ -60,9 +61,7 @@ export default function NoteForm({ onClose }: NoteFormProps) {
           onChange={formik.handleChange}
           value={formik.values.title}
         />
-        <span className={css.error}>
-          {formik.touched.title && formik.errors.title}
-        </span>
+        <ErrorMessage name="title" component="span" className={css.error} />
       </div>
 
       <div className={css.formGroup}>
@@ -75,9 +74,7 @@ export default function NoteForm({ onClose }: NoteFormProps) {
           onChange={formik.handleChange}
           value={formik.values.content}
         />
-        <span className={css.error}>
-          {formik.touched.content && formik.errors.content}
-        </span>
+        <ErrorMessage name="content" component="span" className={css.error} />
       </div>
 
       <div className={css.formGroup}>
@@ -96,9 +93,7 @@ export default function NoteForm({ onClose }: NoteFormProps) {
           <option value="Meeting">Meeting</option>
           <option value="Shopping">Shopping</option>
         </select>
-        <span className={css.error}>
-          {formik.touched.tag && formik.errors.tag}
-        </span>
+        <ErrorMessage name="tag" component="span" className={css.error} />
       </div>
 
       <div className={css.actions}>
