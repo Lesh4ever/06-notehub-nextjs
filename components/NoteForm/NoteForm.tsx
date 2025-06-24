@@ -2,7 +2,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { createNote } from "@/lib/api/api";
+import { createNote } from "@/lib/api";
 import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
