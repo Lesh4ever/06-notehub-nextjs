@@ -47,12 +47,12 @@ export const fetchNotes = async ({
 };
 
 export const fetchNoteById = async (id: number): Promise<Note> => {
-  const response = await axios.get(`${BASE_URL}/${id}`, config);
+  const response = await axios.get<Note>(`${BASE_URL}/${id}`, config);
   return response.data;
 };
 
 export const deleteNote = async (id: number): Promise<Note> => {
-  const response = await axios.delete(`${BASE_URL}/${id}`, config);
+  const response = await axios.delete<Note>(`${BASE_URL}/${id}`, config);
   return response.data;
 };
 
@@ -61,6 +61,6 @@ export const createNote = async (noteData: {
   content: string;
   tag: string;
 }): Promise<Note> => {
-  const response = await axios.post(BASE_URL, noteData, config);
+  const response = await axios.post<Note>(BASE_URL, noteData, config);
   return response.data;
 };

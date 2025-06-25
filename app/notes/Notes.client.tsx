@@ -1,11 +1,10 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteNote } from "@/lib/api";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { deleteNote, fetchNotes } from "@/lib/api";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
+import { useDebounce } from "use-debounce";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
@@ -13,7 +12,6 @@ import NoteModal from "@/components/NoteModal/NoteModal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./Notes.module.css";
 import { Note } from "@/types/note";
-import { useDebounce } from "use-debounce";
 
 type NotesClientProps = {
   notes: Note[];
@@ -41,7 +39,7 @@ export default function NotesClient({ notes, totalPages }: NotesClientProps) {
 
   const { data, isPending, error } = useQuery({
     queryKey: ["notes", debouncedSearch, page],
-    queryFn: () => fetchNotes({ search, page }),
+    queryFn: () => fetchNotes({ search: debouncedSearch, page }),
     initialData: {
       notes,
       totalPages,
@@ -69,12 +67,19 @@ export default function NotesClient({ notes, totalPages }: NotesClientProps) {
     <div className={css.wrapper}>
       <SearchBox value={search} onSearch={handleSearch} />
       <button onClick={handleOpenModal}>Add Note</button>
-      <NoteList notes={data.notes} onDelete={(id: number) => mutate(id)} />
-      <Pagination
-        totalPages={data.totalPages}
-        currentPage={page}
-        onPageChange={handlePageChange}
-      />
+
+      {data.notes.length > 0 && (
+        <NoteList notes={data.notes} onDelete={(id: number) => mutate(id)} />
+      )}
+
+      {data.totalPages > 1 && (
+        <Pagination
+          totalPages={data.totalPages}
+          currentPage={page}
+          onPageChange={handlePageChange}
+        />
+      )}
+
       {isModalOpen && (
         <NoteModal onClose={handleCloseModal}>
           <NoteForm onClose={handleCloseModal} />
