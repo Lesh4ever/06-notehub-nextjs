@@ -1,8 +1,8 @@
 import { fetchNotes } from "@/lib/api";
-import NotesPage from "@/components/NotesPage/NotesPage";
+import NotesClient from "./Notes.client";
 
 export default async function Notes() {
-  const { notes, totalPages } = await fetchNotes({ search: "", page: 1 });
+  const responce = await fetchNotes({ search: "", page: 1 });
 
-  return <NotesPage notes={notes} totalPages={totalPages} />;
+  return <NotesClient initialData={responce} />;
 }

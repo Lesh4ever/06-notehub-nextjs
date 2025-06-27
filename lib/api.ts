@@ -40,10 +40,7 @@ export const fetchNotes = async ({
     ...config,
   });
 
-  return {
-    notes: response.data.notes,
-    totalPages: response.data.totalPages,
-  };
+  return response.data;
 };
 
 export const fetchNoteById = async (id: number): Promise<Note> => {
